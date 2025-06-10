@@ -1,0 +1,17 @@
+{
+    "intent": "coordination update",
+    "action_items": [
+        "Everyone: Book hotel by tomorrow using code TECH2024",
+        "John: Send final presentation slides",
+        "Maria: Create shared document with flight info",
+        "Everyone: Keep all receipts and submit expense reports within 1 week after return",
+        "Everyone: Register for conference before midnight tonight"
+    ],
+    "deadlines": [
+        "Tonight midnight - conference registration (early bird pricing)",
+        "Tomorrow - hotel booking deadline",
+        "Monday - John's slides due",
+        "Within 1 week after return - expense reports"
+    ],
+    "priority": "high"
+}

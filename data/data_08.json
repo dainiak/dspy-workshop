@@ -1,0 +1,18 @@
+{
+    "intent": "urgent reminder",
+    "action_items": [
+        "Karen: Submit budget justification ASAP",
+        "Michael: Submit preliminary results section",
+        "Susan: Review entire NIH document",
+        "Everyone: Update biosketches in new format",
+        "Everyone: Confirm email receipt"
+    ],
+    "deadlines": [
+        "End of day Wednesday - Karen and Michael's sections",
+        "April 30th 5 PM EST - NSF proposal",
+        "May 1st - NIH document review",
+        "May 10th - Internal seed funding",
+        "May 15th - NIH grant"
+    ],
+    "priority": "critical"
+}

@@ -1,0 +1,13 @@
+{
+    "intent": "coordination update",
+    "action_items": [
+        "Jessica: Print 50 more copies of flyers",
+        "Marcus: Fix typo in banner design"
+    ],
+    "deadlines": [
+        "Tuesday morning - flyers needed",
+        "Thursday - banner typo fix",
+        "Friday 8 AM - optional setup help"
+    ],
+    "priority": "medium"
+}

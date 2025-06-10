@@ -1,0 +1,16 @@
+{
+    "intent": "project handover",
+    "action_items": [
+        "Rachel: Fix iOS build issue with IT",
+        "Rachel: Review 3 open pull requests",
+        "Rachel: Complete API documentation section",
+        "Rachel & Tom: Sync meeting on Wednesday"
+    ],
+    "deadlines": [
+        "Soon - iOS build fix (already 3 days broken)",
+        "Next sprint - clear pull requests",
+        "Soon - API documentation update",
+        "Wednesday - sync meeting"
+    ],
+    "priority": "medium"
+}

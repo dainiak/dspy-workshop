@@ -1,0 +1,14 @@
+{
+    "intent": "task assignment",
+    "action_items": [
+        "Ashley: Resize logo by 20% and adjust blue color",
+        "Brian: Implement newsletter popup with 5-second delay",
+        "Team: Prepare clickable version for client",
+        "Someone: Organize team lunch (Sandra can coordinate if needed)"
+    ],
+    "deadlines": [
+        "Next Friday - working version for client meeting",
+        "Next week - team lunch"
+    ],
+    "priority": "medium"
+}

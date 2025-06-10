@@ -1,0 +1,21 @@
+Subject: Re: Re: Re: Website redesign
+
+Hi Dev Team,
+
+Sorry for the long email chain. Let me summarize where we are:
+
+The client finally approved the mockups (yay!) but wants some "minor" changes:
+- Make the logo 20% bigger
+- Change the blue to "more blue" (I know, I know...)
+- Add a popup for newsletter signup (ugh)
+
+@Ashley - can you handle the logo resize and color adjustment? Should be quick.
+
+@Brian - I hate to ask, but can you implement the popup? I know we said no more popups but the client is insisting. Try to make it as non-intrusive as possible. Maybe a 5-second delay?
+
+We need to show them a working version by next Friday's meeting. Not the final version, just something clickable.
+
+Also, unrelated - who's organizing the team lunch next week? If no one's claimed it, I'm happy to coordinate.
+
+Thanks team!
+-PM Sandra

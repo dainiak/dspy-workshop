@@ -1,0 +1,11 @@
+{
+    "intent": "informational update",
+    "action_items": [
+        "Everyone: Use Lab 305 centrifuge instead of Lab 302",
+        "Everyone: Properly label samples in -80 freezer"
+    ],
+    "deadlines": [
+        "Up to 2 weeks - maintenance completion"
+    ],
+    "priority": "low"
+}

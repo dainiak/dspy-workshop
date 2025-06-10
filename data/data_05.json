@@ -1,0 +1,14 @@
+{
+    "intent": "scheduling request",
+    "action_items": [
+        "Professor Williams: Send complete availability for last two weeks of month",
+        "Professor Williams: Review Chapter 3 of proposal",
+        "Professor Williams: Sign and return committee approval form"
+    ],
+    "deadlines": [
+        "This Friday - room booking submission deadline",
+        "19th - Chapter 3 feedback needed",
+        "At least 10 days before defense - signed form due"
+    ],
+    "priority": "high"
+}

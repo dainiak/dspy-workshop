@@ -1,0 +1,16 @@
+{
+    "intent": "emergency request",
+    "action_items": [
+        "David: Run rollback script immediately",
+        "Lisa: Draft stakeholder communication",
+        "David: Schedule and own post-mortem meeting",
+        "Everyone: Attend war room meeting at 9 AM"
+    ],
+    "deadlines": [
+        "Immediately - run rollback script",
+        "Today - draft stakeholder communication",
+        "9 AM sharp - war room meeting",
+        "Next week - post-mortem meeting"
+    ],
+    "priority": "critical"
+}

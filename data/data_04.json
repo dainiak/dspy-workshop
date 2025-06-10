@@ -1,0 +1,15 @@
+{
+    "intent": "meeting follow-up",
+    "action_items": [
+        "Emma: Set up expense tracking spreadsheet",
+        "Jake: Reach out to pizza place for sponsorship",
+        "Anyone: Volunteer to lead mental health awareness week"
+    ],
+    "deadlines": [
+        "Next meeting - expense tracking spreadsheet",
+        "This week - contact pizza place",
+        "Friday - volunteer signup deadline",
+        "15th - next meeting"
+    ],
+    "priority": "low"
+}

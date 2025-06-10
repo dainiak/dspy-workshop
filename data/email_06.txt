@@ -1,0 +1,16 @@
+Subject: Project handover notes
+
+Hi Rachel,
+
+As discussed, I'm transitioning off the mobile app project next week. Here's what needs attention:
+
+The iOS build is failing on the CI/CD pipeline - something about provisioning profiles. You'll need to coordinate with IT to get that fixed. It's been broken for 3 days now so probably should be addressed soon.
+
+There are 3 open pull requests that need review. Nothing urgent, but would be good to clear them out within the next sprint.
+
+Oh, and please remember to update the documentation wiki. I started it but never finished the API section. The client asked about this last week so they're expecting it "soon" (whatever that means lol).
+
+Let's sync on Wednesday to go over any questions you have?
+
+Good luck!
+Tom

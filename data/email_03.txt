@@ -1,0 +1,17 @@
+Subject: Urgent: Database migration issue
+
+Team,
+
+We have a problem. The database migration last night failed halfway through and now we have inconsistent data between the old and new schemas. I need all hands on deck to fix this before users notice.
+
+@David - Can you immediately run the rollback script? Instructions are in the wiki under "Emergency Procedures"
+
+@Lisa - Please draft a communication to stakeholders explaining we might have some downtime today. Run it by me before sending.
+
+@Everyone - Cancel your morning meetings. We're doing a war room at 9 AM sharp in Conference Room 3.
+
+Also, once this fire is out, we need to do a proper post-mortem. David, can you own that? Schedule it for sometime next week when everyone's calmed down.
+
+This is TOP PRIORITY. Everything else can wait.
+
+-James
