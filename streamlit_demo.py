@@ -4,22 +4,14 @@ import streamlit as st
 
 from optimize_email_parser import load_training_data, EmailParser
 
-st.title("📧 DSPy Email Parser Demo")
-st.markdown("### See the power of DSPy optimization in action!")
+st.title("DSPy Email Parser Demo")
 
-# Load data
 @st.cache_resource
 def get_optimized_parser():
     parser = EmailParser()
     parser.load("optimized_parser.json")
     return parser
 
-# Create parsers
-if 'parser' not in st.session_state:
-    with st.spinner("Optimizing parser with DSPy..."):
-        st.session_state.parser = get_optimized_parser()
-
-# Email input
 email_text = st.text_area("Paste an email here:", height=200)
 
 if st.button("Extract Action Items"):
