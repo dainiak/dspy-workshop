@@ -365,3 +365,4 @@ def run_demo():
 
 if __name__ == "__main__":
     optimized_parser = run_demo()
+    optimized_parser.save("optimized_parser.json")
