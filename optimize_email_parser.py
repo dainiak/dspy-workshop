@@ -4,12 +4,10 @@ import os
 from logging.handlers import RotatingFileHandler
 
 import dspy
-import pandas as pd
+
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field
 
 load_dotenv("./.env")
-
 
 log_file = 'lm_prompts.log'
 file_handler = RotatingFileHandler(log_file)
@@ -25,14 +23,14 @@ class LoggingLM(dspy.LM):
         super().__init__(*args, **kwargs)
 
     def forward(self, prompt=None, messages=None, **kwargs):
+        results = super().forward(prompt, messages, **kwargs)
         if prompt is not None:
             logger.info(f"Prompt: {prompt}")
-
-        # Log messages if they exist
         if messages is not None:
             logger.info(f"Messages: {json.dumps(messages, indent=2)}")
+            logger.info(f"Completion: {results}")
 
-        return super().forward(prompt, messages, **kwargs)
+        return results
 
 
 lm = LoggingLM(
@@ -43,13 +41,6 @@ lm = LoggingLM(
 )
 
 dspy.settings.configure(lm=lm)
-
-
-class EmailExtraction(BaseModel):
-    intent: str = Field(description="Primary intent: task assignment, meeting request, FYI, etc.")
-    action_items: list[str] = Field(description="List of action items with assignees")
-    deadlines: list[str] = Field(description="List of deadlines or dates mentioned")
-    priority: str = Field(description="Priority level: high, medium, low")
 
 
 def load_training_data(data_dir="./data/"):
@@ -76,7 +67,7 @@ def load_training_data(data_dir="./data/"):
 
         examples.append(example)
 
-    return examples[:4]
+    return examples
 
 
 # A simple baseline prompt (for comparison)
@@ -166,7 +157,6 @@ class LLMJudge(dspy.Module):
         return result
 
 
-# Initialize the judge once to reuse
 judge = LLMJudge()
 
 
@@ -174,7 +164,6 @@ judge = LLMJudge()
 def extraction_accuracy(example, pred, trace=None):
     """Calculate accuracy of extraction using LLM as judge"""
     try:
-        # Use the LLM judge to evaluate
         evaluation = judge(
             email=example.email,
             pred=pred,
@@ -212,28 +201,39 @@ def optimize_email_parser(train_examples):
     #     max_errors=5, # Maximum errors before giving up
     # )
 
-    # Compile the optimized parser
-    # print("Optimizing the parser...")
     # return teleprompter.compile(
     #     parser,
     #     trainset=train_examples
     # )
 
     # https://dspy.ai/api/optimizers/MIPROv2/
-    teleprompter = dspy.MIPROv2(
-        auto=None,
+    # teleprompter = dspy.MIPROv2(
+    #     auto=None,
+    #     metric=extraction_accuracy,
+    #     num_candidates=4,  # Number of different signature variations
+    #     init_temperature=0.7,  # Higher temp = more creative variations
+    #     verbose=True
+    # )
+    # return teleprompter.compile(
+    #     parser,
+    #     trainset=train_examples[:-3],
+    #     valset=train_examples[-3:],
+    #     num_trials=2
+    # )
+
+    teleprompter = dspy.COPRO(
         metric=extraction_accuracy,
-        num_candidates=2,  # Number of different signature variations
-        init_temperature=0.7,  # Higher temp = more creative variations
-        verbose=True
+        breadth=3,  # Try more instruction variants
+        depth=3,  # More optimization rounds
+        init_temperature=1.2,
+        verbose=True,
+        track_stats=True,  # See what COPRO learned
     )
 
-    # Compile the optimized parser
-    print("Optimizing the parser...")
     return teleprompter.compile(
         parser,
         trainset=train_examples,
-        num_trials=2
+        eval_kwargs={}
     )
 
 
@@ -256,7 +256,6 @@ def inspect_parser(parser):
     print("PROMPT STRUCTURE:")
     print("=" * 60)
 
-    # Show the demonstrations DSPy selected
     if hasattr(parser.extract, 'demos') and parser.extract.demos:
         print(f"\nDSPy selected {len(parser.extract.demos)} demonstrations")
         print("\nExample demonstrations:")
@@ -274,20 +273,17 @@ def inspect_parser(parser):
         print(f"\nSignature: {parser.extract.signature}")
     else:
         print("\nSignature: Not directly accessible")
-        # Try to show available attributes for debugging
         print(
             f"Available attributes on extract: {[attr for attr in dir(parser.extract) if not attr.startswith('_')]}")
 
-    # Show extended signature if available
     if hasattr(parser.extract, 'extended_signature'):
         print(f"\nExtended signature:")
         print(parser.extract.extended_signature)
     elif hasattr(parser.extract, 'predict') and hasattr(parser.extract.predict,
-                                                                  'extended_signature'):
+                                                        'extended_signature'):
         print(f"\nExtended signature:")
         print(parser.extract.predict.extended_signature)
 
-    # Show the actual prompt being used (if available)
     if hasattr(parser.extract, 'predict') and hasattr(parser.extract.predict, 'lm'):
         print("\nOptimized prompt structure created by DSPy")
 
@@ -343,22 +339,22 @@ def run_demo():
     print("\nTraining DSPy email parser...")
     optimized_parser = optimize_email_parser(examples)
 
-    print("\nComparing baseline vs DSPy optimized parser...")
-    baseline = BaselineEmailParser()
+    # print("\nComparing baseline vs DSPy optimized parser...")
+    # baseline = BaselineEmailParser()
 
-    results = compare_parsers(examples, baseline, optimized_parser)
-
-    if results:
-        df = pd.DataFrame(results)
-        print("\n" + "=" * 60)
-        print("PERFORMANCE COMPARISON")
-        print("=" * 60)
-        print(f"Baseline Average Score: {df['baseline_score'].mean():.2%}")
-        print(f"DSPy Optimized Score: {df['optimized_score'].mean():.2%}")
-        print(f"Improvement: {(df['optimized_score'].mean() - df['baseline_score'].mean()):.2%}")
+    # results = compare_parsers(examples, baseline, optimized_parser)
+    #
+    # if results:
+    #     df = pd.DataFrame(results)
+    #     print("\n" + "=" * 60)
+    #     print("PERFORMANCE COMPARISON")
+    #     print("=" * 60)
+    #     print(f"Baseline Average Score: {df['baseline_score'].mean():.2%}")
+    #     print(f"DSPy Optimized Score: {df['optimized_score'].mean():.2%}")
+    #     print(f"Improvement: {(df['optimized_score'].mean() - df['baseline_score'].mean()):.2%}")
 
     # Show what DSPy learned
-    inspect_parser(optimized_parser)
+    # inspect_parser(optimized_parser)
 
     return optimized_parser
 
