@@ -226,7 +226,7 @@ def optimize_email_parser(train_examples):
         breadth=3,  # Try more instruction variants
         depth=3,  # More optimization rounds
         init_temperature=1.2,
-        verbose=True,
+        verbose=False,
         track_stats=True,  # See what COPRO learned
     )
 
@@ -354,7 +354,7 @@ def run_demo():
     #     print(f"Improvement: {(df['optimized_score'].mean() - df['baseline_score'].mean()):.2%}")
 
     # Show what DSPy learned
-    # inspect_parser(optimized_parser)
+    inspect_parser(optimized_parser)
 
     return optimized_parser
 

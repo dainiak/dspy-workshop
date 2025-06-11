@@ -6,17 +6,13 @@ from optimize_email_parser import load_training_data, EmailParser
 
 st.title("DSPy Email Parser Demo")
 
-@st.cache_resource
-def get_optimized_parser():
-    parser = EmailParser()
-    parser.load("optimized_parser.json")
-    return parser
-
 email_text = st.text_area("Paste an email here:", height=200)
 
 if st.button("Extract Action Items"):
     if email_text:
-        pred = st.session_state.parser(email_text)
+        parser = EmailParser()
+        parser.load("optimized_parser.json")
+        pred = parser(email_text)
         dspy_result = {
             'intent': pred.intent,
             'action_items': [item.strip() for item in pred.action_items.split(';')],
