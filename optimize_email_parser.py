@@ -2,10 +2,13 @@ import json
 import logging
 import os
 from logging.handlers import RotatingFileHandler
+from textwrap import indent
 
 import dspy
 
 from dotenv import load_dotenv
+
+from yaml_formatter import YAMLFormatter
 
 load_dotenv("./.env")
 
@@ -17,6 +20,7 @@ logger = logging.getLogger("Prompt Logger")
 logger.addHandler(file_handler)
 logger.setLevel(logging.INFO)
 
+yaml_formatter = YAMLFormatter()
 
 class LoggingLM(dspy.LM):
     def __init__(self, *args, **kwargs):
@@ -25,10 +29,12 @@ class LoggingLM(dspy.LM):
     def forward(self, prompt=None, messages=None, **kwargs):
         results = super().forward(prompt, messages, **kwargs)
         if prompt is not None:
-            logger.info(f"Prompt: {prompt}")
+            logger.info(f"Prompt: \n" + indent(str(prompt), prefix='   '))
         if messages is not None:
-            logger.info(f"Messages: {json.dumps(messages, indent=2)}")
-            logger.info(f"Completion: {results}")
+            messages_txt = indent(yaml_formatter.format(messages), prefix='   ')
+            logger.info(f"Messages: \n" + messages_txt)
+            completions_txt = indent(yaml_formatter.format([str(choice.message.content) for choice in results.choices]), prefix='   ')
+            logger.info(f"Completion: \n" + completions_txt)
 
         return results
 
@@ -36,8 +42,7 @@ class LoggingLM(dspy.LM):
 lm = LoggingLM(
     'openai/gpt-3.5-turbo',
     temperature=0.1,
-    max_tokens=1000,
-    response_format={"type": "json_object"}
+    max_tokens=1000
 )
 
 dspy.settings.configure(lm=lm)
