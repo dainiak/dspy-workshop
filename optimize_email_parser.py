@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 from textwrap import indent
 
 import dspy
@@ -10,9 +11,12 @@ from dotenv import load_dotenv
 
 from yaml_formatter import YAMLFormatter
 
-load_dotenv("./.env")
+BASE_DIR = Path(__file__).parent
+MODEL = os.getenv("DSPY_MODEL", "anthropic/claude-haiku-4-5-20251001")
 
-log_file = 'lm_prompts.log'
+load_dotenv(BASE_DIR / ".env")
+
+log_file = BASE_DIR / 'lm_prompts.log'
 file_handler = RotatingFileHandler(log_file)
 file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 
@@ -40,7 +44,7 @@ class LoggingLM(dspy.LM):
 
 
 lm = LoggingLM(
-    'anthropic/claude-haiku-4-5-20251001',
+    MODEL,
     temperature=0.1,
     max_tokens=1000
 )
@@ -48,19 +52,20 @@ lm = LoggingLM(
 dspy.configure(lm=lm)
 
 
-def load_training_data(data_dir="./data/"):
+def load_training_data(data_dir=None):
+    if data_dir is None:
+        data_dir = BASE_DIR / "data"
+    data_dir = Path(data_dir)
+
     examples = []
-    email_files = sorted([f for f in os.listdir(data_dir) if f.startswith("email_") and f.endswith(".txt")])
+    email_files = sorted(data_dir.glob("email_*.txt"))
 
-    for email_file in email_files:
-        num = email_file.split("_")[1].split(".")[0]
-        json_file = f"data_{num}.json"
+    for email_path in email_files:
+        num = email_path.stem.split("_")[1]
+        json_path = data_dir / f"data_{num}.json"
 
-        with open(os.path.join(data_dir, email_file), 'r') as f:
-            email_content = f.read().strip()
-
-        with open(os.path.join(data_dir, json_file), 'r') as f:
-            extraction_data = json.load(f)
+        email_content = email_path.read_text().strip()
+        extraction_data = json.loads(json_path.read_text())
 
         example = dspy.Example(
             email=email_content,
@@ -73,30 +78,6 @@ def load_training_data(data_dir="./data/"):
         examples.append(example)
 
     return examples
-
-
-# A simple baseline prompt (for comparison)
-class BaselineEmailParser:
-    def __init__(self):
-        self.prompt_template = """Extract the following from this email:
-- Intent (task assignment, meeting request, FYI, etc.)
-- Action items with assignees
-- Deadlines
-- Priority level
-
-Email: {email}
-
-Please extract in JSON format."""
-
-    def __call__(self, email):
-        class BaselinePrediction:
-            def __init__(self):
-                self.intent = "unknown"
-                self.action_items = "Extract manually"
-                self.deadlines = "Check email"
-                self.priority = "medium"
-
-        return BaselinePrediction()
 
 
 # DSPy Signature for email parsing
@@ -168,6 +149,13 @@ judge = LLMJudge()
 # Evaluation metric using LLM as judge
 def extraction_accuracy(example, pred, trace=None):
     """Calculate accuracy of extraction using LLM as judge"""
+    def parse_score(value, default=0.0):
+        try:
+            score = float(value)
+            return max(0.0, min(1.0, score))
+        except (ValueError, TypeError):
+            return default
+
     try:
         evaluation = judge(
             email=example.email,
@@ -176,56 +164,27 @@ def extraction_accuracy(example, pred, trace=None):
         )
 
         scores = [
-            float(evaluation.intent_score),
-            float(evaluation.action_items_score),
-            float(evaluation.deadlines_score),
-            float(evaluation.priority_score)
+            parse_score(evaluation.intent_score),
+            parse_score(evaluation.action_items_score),
+            parse_score(evaluation.deadlines_score),
+            parse_score(evaluation.priority_score)
         ]
 
-        avg_score = sum(scores) / len(scores)
-        return avg_score
+        return sum(scores) / len(scores)
 
     except Exception as e:
         print(f"Error in evaluation: {e}")
-        return 0.25  # Basic score if evaluation fails
+        return 0.0
 
 
 # Optimize the email parser
 def optimize_email_parser(train_examples):
     """Optimize the email parser using DSPy"""
 
-    # Create base parser
     parser = EmailParser()
 
-    # Create the teleprompter (optimizer)
-    # teleprompter = dspy.BootstrapFewShot(
-    #     metric=extraction_accuracy,
-    #     max_bootstrapped_demos=4, # How many examples to include in the prompt
-    #     max_labeled_demos=4, # How many labeled examples to use
-    #     max_rounds=1, # Number of optimization rounds (1 for demo speed)
-    #     max_errors=5, # Maximum errors before giving up
-    # )
-
-    # return teleprompter.compile(
-    #     parser,
-    #     trainset=train_examples
-    # )
-
-    # https://dspy.ai/api/optimizers/MIPROv2/
-    # teleprompter = dspy.MIPROv2(
-    #     auto=None,
-    #     metric=extraction_accuracy,
-    #     num_candidates=4,  # Number of different signature variations
-    #     init_temperature=0.7,  # Higher temp = more creative variations
-    #     verbose=True
-    # )
-    # return teleprompter.compile(
-    #     parser,
-    #     trainset=train_examples[:-3],
-    #     valset=train_examples[-3:],
-    #     num_trials=2
-    # )
-
+    # Other optimizers to try: dspy.BootstrapFewShot, dspy.MIPROv2
+    # See https://dspy.ai/api/category/optimizers/
     teleprompter = dspy.COPRO(
         metric=extraction_accuracy,
         breadth=3,  # Try more instruction variants
@@ -255,8 +214,8 @@ def test_parser(parser, test_example):
     return prediction
 
 
-# Inspect optimized prompts
 def inspect_parser(parser):
+    """Print what DSPy learned during optimization."""
     print("\n" + "=" * 60)
     print("PROMPT STRUCTURE:")
     print("=" * 60)
@@ -293,49 +252,6 @@ def inspect_parser(parser):
         print("\nOptimized prompt structure created by DSPy")
 
 
-# Compare baseline vs optimized
-def compare_parsers(samples, baseline_parser, optimized_parser):
-    """Compare performance of baseline vs optimized parser"""
-    results = []
-
-    for i, example in enumerate(samples):
-        print(f"\n{'=' * 60}")
-        print(f"Test Email {i + 1}")
-        print(f"{'=' * 60}")
-
-        # Baseline prediction
-        baseline_pred = baseline_parser(email=example.email)
-        baseline_score = extraction_accuracy(example, baseline_pred)
-
-        # Optimized prediction
-        optimized_pred = optimized_parser(email=example.email)
-        optimized_score = extraction_accuracy(example, optimized_pred)
-
-        results.append({
-            'email_num': i + 1,
-            'baseline_score': baseline_score,
-            'optimized_score': optimized_score,
-            'improvement': optimized_score - baseline_score
-        })
-
-        print(f"\nBaseline Score: {baseline_score:.2%}")
-        print(f"Optimized Score: {optimized_score:.2%}")
-        print(f"Improvement: {optimized_score - baseline_score:.2%}")
-
-    # Summary statistics
-    avg_baseline = sum(r['baseline_score'] for r in results) / len(results)
-    avg_optimized = sum(r['optimized_score'] for r in results) / len(results)
-
-    print(f"\n{'=' * 60}")
-    print("OVERALL PERFORMANCE:")
-    print(f"{'=' * 60}")
-    print(f"Average Baseline Score: {avg_baseline:.2%}")
-    print(f"Average Optimized Score: {avg_optimized:.2%}")
-    print(f"Average Improvement: {avg_optimized - avg_baseline:.2%}")
-
-    return results
-
-
 def run_demo():
     print("Loading training data...")
     examples = load_training_data()
@@ -344,21 +260,6 @@ def run_demo():
     print("\nTraining DSPy email parser...")
     optimized_parser = optimize_email_parser(examples)
 
-    # print("\nComparing baseline vs DSPy optimized parser...")
-    # baseline = BaselineEmailParser()
-
-    # results = compare_parsers(examples, baseline, optimized_parser)
-    #
-    # if results:
-    #     df = pd.DataFrame(results)
-    #     print("\n" + "=" * 60)
-    #     print("PERFORMANCE COMPARISON")
-    #     print("=" * 60)
-    #     print(f"Baseline Average Score: {df['baseline_score'].mean():.2%}")
-    #     print(f"DSPy Optimized Score: {df['optimized_score'].mean():.2%}")
-    #     print(f"Improvement: {(df['optimized_score'].mean() - df['baseline_score'].mean()):.2%}")
-
-    # Show what DSPy learned
     inspect_parser(optimized_parser)
 
     return optimized_parser
@@ -366,4 +267,4 @@ def run_demo():
 
 if __name__ == "__main__":
     optimized_parser = run_demo()
-    optimized_parser.save("optimized_parser.json")
+    optimized_parser.save(BASE_DIR / "optimized_parser.json")

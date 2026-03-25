@@ -1,5 +1,6 @@
 .venv/
 .env
 planning/
+__pycache__/
 *.log
 uv.lock
