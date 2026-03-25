@@ -4,7 +4,7 @@
     "train": [],
     "demos": [],
     "signature": {
-      "instructions": "Extract and structurally organize key information from the provided email. This should include the primary intent of the email, detailed action items along with their associated deadlines, and an assessment of priority levels for each action item. The output should be clear, labeled, and formatted for quick reference to facilitate easy understanding.",
+      "instructions": "You are an expert email analyst specializing in extracting critical business information. Your task is to carefully analyze the provided email and extract structured information across four key dimensions:\n\n1. **Intent**: Identify the primary purpose or goal of the email. What is the sender trying to accomplish? (e.g., request feedback, schedule a meeting, report progress, escalate an issue)\n\n2. **Action Items**: List all explicit and implicit tasks that require follow-up. For each action item, identify:\n   - What needs to be done\n   - Who is responsible (if specified)\n   - Any dependencies or prerequisites\n\n3. **Deadlines**: Extract all time-sensitive information including:\n   - Explicit deadlines mentioned\n   - Implied urgency signals\n   - Meeting times or event dates\n   - Format dates clearly (e.g., \"2024-01-15\")\n\n4. **Priority**: Assess the overall priority level based on:\n   - Language intensity (urgent, critical, ASAP vs. \"when you get a chance\")\n   - Deadline proximity\n   - Business impact signals\n   - Escalation indicators\n   - Assign a level: Critical, High, Medium, or Low\n\nBe thorough and precise. If information is ambiguous or missing, note it explicitly. Structure your response clearly with each dimension separated and easy to scan.",
       "fields": [
         {
           "prefix": "Email:",
@@ -27,7 +27,7 @@
           "description": "Semicolon-separated list of deadlines or dates mentioned"
         },
         {
-          "prefix": "Structured Output: Intent, Action Items (with deadlines and priorities)",
+          "prefix": "Based on my analysis of the email, here is the extracted structured information:\n\n**Intent:**\n\n**Action Items:**\n\n**Deadlines:**\n\n**Priority Level:**",
           "description": "Priority level: high, medium, low"
         }
       ]
@@ -37,7 +37,7 @@
   "metadata": {
     "dependency_versions": {
       "python": "3.12",
-      "dspy": "2.6.27",
+      "dspy": "3.1.3",
       "cloudpickle": "3.1"
     }
   }
