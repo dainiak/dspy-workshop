@@ -40,12 +40,12 @@ class LoggingLM(dspy.LM):
 
 
 lm = LoggingLM(
-    'openai/gpt-3.5-turbo',
+    'anthropic/claude-haiku-4-5-20251001',
     temperature=0.1,
     max_tokens=1000
 )
 
-dspy.settings.configure(lm=lm)
+dspy.configure(lm=lm)
 
 
 def load_training_data(data_dir="./data/"):

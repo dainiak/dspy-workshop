@@ -1,0 +1,44 @@
+{
+  "extract.predict": {
+    "traces": [],
+    "train": [],
+    "demos": [],
+    "signature": {
+      "instructions": "Extract and structurally organize key information from the provided email. This should include the primary intent of the email, detailed action items along with their associated deadlines, and an assessment of priority levels for each action item. The output should be clear, labeled, and formatted for quick reference to facilitate easy understanding.",
+      "fields": [
+        {
+          "prefix": "Email:",
+          "description": "The email content to parse"
+        },
+        {
+          "prefix": "Reasoning: Let's think step by step in order to",
+          "description": "${reasoning}"
+        },
+        {
+          "prefix": "Intent:",
+          "description": "Primary intent: task assignment, meeting request, FYI, etc."
+        },
+        {
+          "prefix": "Action Items:",
+          "description": "Semicolon-separated list of action items with assignees"
+        },
+        {
+          "prefix": "Deadlines:",
+          "description": "Semicolon-separated list of deadlines or dates mentioned"
+        },
+        {
+          "prefix": "Structured Output: Intent, Action Items (with deadlines and priorities)",
+          "description": "Priority level: high, medium, low"
+        }
+      ]
+    },
+    "lm": null
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.12",
+      "dspy": "2.6.27",
+      "cloudpickle": "3.1"
+    }
+  }
+}
