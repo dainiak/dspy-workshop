@@ -6,8 +6,10 @@ from pathlib import Path
 from textwrap import indent
 
 import dspy
-
+import litellm
 from dotenv import load_dotenv
+
+litellm.drop_params = True
 
 from yaml_formatter import YAMLFormatter
 
@@ -185,7 +187,7 @@ def optimize_email_parser(train_examples):
         metric=extraction_accuracy,
         breadth=3,  # Try more instruction variants
         depth=3,  # More optimization rounds
-        init_temperature=1.2,
+        init_temperature=0.8,
         verbose=False,
         track_stats=True,  # See what COPRO learned
     )
