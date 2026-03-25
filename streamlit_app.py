@@ -13,21 +13,25 @@ if st.button("Extract Action Items"):
         parser = EmailParser()
         parser.load(BASE_DIR / "optimized_parser.json")
         pred = parser(email=email_text)
-        st.json({
-            'intent': pred.intent,
-            'action_items': [item.strip() for item in pred.action_items.split(';')],
-            'deadlines': [d.strip() for d in pred.deadlines.split(';')],
-            'priority': pred.priority
-        })
+        st.json(
+            {
+                "intent": pred.intent,
+                "action_items": [item.strip() for item in pred.action_items.split(";")],
+                "deadlines": [d.strip() for d in pred.deadlines.split(";")],
+                "priority": pred.priority,
+            }
+        )
 
 with st.expander("Example Emails"):
     examples = load_training_data()
     for i, ex in enumerate(examples[:3]):
-        st.text(f"Email {i+1}:")
+        st.text(f"Email {i + 1}:")
         st.text(ex.email[:200] + "...")
-        st.json({
-            'intent': ex.intent,
-            'action_items': ex.action_items.split(';'),
-            'deadlines': ex.deadlines.split(';'),
-            'priority': ex.priority
-        })
+        st.json(
+            {
+                "intent": ex.intent,
+                "action_items": ex.action_items.split(";"),
+                "deadlines": ex.deadlines.split(";"),
+                "priority": ex.priority,
+            }
+        )

@@ -16,15 +16,16 @@ MODEL = os.getenv("DSPY_MODEL", "anthropic/claude-haiku-4-5-20251001")
 
 load_dotenv(BASE_DIR / ".env")
 
-log_file = BASE_DIR / 'lm_prompts.log'
+log_file = BASE_DIR / "lm_prompts.log"
 file_handler = RotatingFileHandler(log_file)
-file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
 
 logger = logging.getLogger("Prompt Logger")
 logger.addHandler(file_handler)
 logger.setLevel(logging.INFO)
 
 yaml_formatter = YAMLFormatter()
+
 
 class LoggingLM(dspy.LM):
     def __init__(self, *args, **kwargs):
@@ -33,21 +34,19 @@ class LoggingLM(dspy.LM):
     def forward(self, prompt=None, messages=None, **kwargs):
         results = super().forward(prompt, messages, **kwargs)
         if prompt is not None:
-            logger.info(f"Prompt: \n" + indent(str(prompt), prefix='   '))
+            logger.info(f"Prompt: \n" + indent(str(prompt), prefix="   "))
         if messages is not None:
-            messages_txt = indent(yaml_formatter.format(messages), prefix='   ')
+            messages_txt = indent(yaml_formatter.format(messages), prefix="   ")
             logger.info(f"Messages: \n" + messages_txt)
-            completions_txt = indent(yaml_formatter.format([str(choice.message.content) for choice in results.choices]), prefix='   ')
+            completions_txt = indent(
+                yaml_formatter.format([str(choice.message.content) for choice in results.choices]), prefix="   "
+            )
             logger.info(f"Completion: \n" + completions_txt)
 
         return results
 
 
-lm = LoggingLM(
-    MODEL,
-    temperature=0.1,
-    max_tokens=1000
-)
+lm = LoggingLM(MODEL, temperature=0.1, max_tokens=1000)
 
 dspy.configure(lm=lm)
 
@@ -69,11 +68,11 @@ def load_training_data(data_dir=None):
 
         example = dspy.Example(
             email=email_content,
-            intent=extraction_data['intent'],
-            action_items='; '.join(extraction_data['action_items']),
-            deadlines='; '.join(extraction_data['deadlines']),
-            priority=extraction_data['priority']
-        ).with_inputs('email')
+            intent=extraction_data["intent"],
+            action_items="; ".join(extraction_data["action_items"]),
+            deadlines="; ".join(extraction_data["deadlines"]),
+            priority=extraction_data["priority"],
+        ).with_inputs("email")
 
         examples.append(example)
 
@@ -138,7 +137,7 @@ class LLMJudge(dspy.Module):
             true_intent=true.intent,
             true_action_items=true.action_items,
             true_deadlines=true.deadlines,
-            true_priority=true.priority
+            true_priority=true.priority,
         )
         return result
 
@@ -149,6 +148,7 @@ judge = LLMJudge()
 # Evaluation metric using LLM as judge
 def extraction_accuracy(example, pred, trace=None):
     """Calculate accuracy of extraction using LLM as judge"""
+
     def parse_score(value, default=0.0):
         try:
             score = float(value)
@@ -157,17 +157,13 @@ def extraction_accuracy(example, pred, trace=None):
             return default
 
     try:
-        evaluation = judge(
-            email=example.email,
-            pred=pred,
-            true=example
-        )
+        evaluation = judge(email=example.email, pred=pred, true=example)
 
         scores = [
             parse_score(evaluation.intent_score),
             parse_score(evaluation.action_items_score),
             parse_score(evaluation.deadlines_score),
-            parse_score(evaluation.priority_score)
+            parse_score(evaluation.priority_score),
         ]
 
         return sum(scores) / len(scores)
@@ -194,11 +190,7 @@ def optimize_email_parser(train_examples):
         track_stats=True,  # See what COPRO learned
     )
 
-    return teleprompter.compile(
-        parser,
-        trainset=train_examples,
-        eval_kwargs={}
-    )
+    return teleprompter.compile(parser, trainset=train_examples, eval_kwargs={})
 
 
 # Function to test the parser
@@ -207,7 +199,7 @@ def test_parser(parser, test_example):
     prediction = parser(email=test_example.email)
 
     # Calculate score if ground truth is available
-    if hasattr(test_example, 'intent'):
+    if hasattr(test_example, "intent"):
         score = extraction_accuracy(test_example, prediction)
         print(f"\nAccuracy Score: {score:.2%}")
 
@@ -220,7 +212,7 @@ def inspect_parser(parser):
     print("PROMPT STRUCTURE:")
     print("=" * 60)
 
-    if hasattr(parser.extract, 'demos') and parser.extract.demos:
+    if hasattr(parser.extract, "demos") and parser.extract.demos:
         print(f"\nDSPy selected {len(parser.extract.demos)} demonstrations")
         print("\nExample demonstrations:")
         for i, demo in enumerate(parser.extract.demos[:2]):
@@ -231,24 +223,22 @@ def inspect_parser(parser):
             print(f"Priority: {demo.priority}")
 
     # Access signature through the predict attribute
-    if hasattr(parser.extract, 'predict') and hasattr(parser.extract.predict, 'signature'):
+    if hasattr(parser.extract, "predict") and hasattr(parser.extract.predict, "signature"):
         print(f"\nSignature: {parser.extract.predict.signature}")
-    elif hasattr(parser.extract, 'signature'):
+    elif hasattr(parser.extract, "signature"):
         print(f"\nSignature: {parser.extract.signature}")
     else:
         print("\nSignature: Not directly accessible")
-        print(
-            f"Available attributes on extract: {[attr for attr in dir(parser.extract) if not attr.startswith('_')]}")
+        print(f"Available attributes on extract: {[attr for attr in dir(parser.extract) if not attr.startswith('_')]}")
 
-    if hasattr(parser.extract, 'extended_signature'):
+    if hasattr(parser.extract, "extended_signature"):
         print(f"\nExtended signature:")
         print(parser.extract.extended_signature)
-    elif hasattr(parser.extract, 'predict') and hasattr(parser.extract.predict,
-                                                        'extended_signature'):
+    elif hasattr(parser.extract, "predict") and hasattr(parser.extract.predict, "extended_signature"):
         print(f"\nExtended signature:")
         print(parser.extract.predict.extended_signature)
 
-    if hasattr(parser.extract, 'predict') and hasattr(parser.extract.predict, 'lm'):
+    if hasattr(parser.extract, "predict") and hasattr(parser.extract.predict, "lm"):
         print("\nOptimized prompt structure created by DSPy")
 
 
